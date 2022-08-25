@@ -38,8 +38,29 @@ class TodoListViewController: UITableViewController {
         return cell
     }
     
+    
+//MARK: - TableView Delegate Methods
+    
+    //to detect which row was selected
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
+        //to add/remove a checkmark on selected cell
+        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+        } else {
+            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+        }
+            
+        //when selected, cell flashes gray and goes back to being deselected and white
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
 
 }
+
+
+
+//to select each cell and have it printed to debug console,
+//and be able to give it a checkmark everytime I click on each cell, and unchecked if I click again
 
 
 
