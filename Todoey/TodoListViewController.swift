@@ -13,7 +13,7 @@ import UIKit
 //because all of is automated behind the scenes by XCode
 class TodoListViewController: UITableViewController {
     
-    let itemArray = ["Buy Eggs", "Buy tomatos", "make bread"]
+    var itemArray = ["Buy Eggs", "Buy tomatos", "make bread"]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,13 +54,45 @@ class TodoListViewController: UITableViewController {
         //when selected, cell flashes gray and goes back to being deselected and white
         tableView.deselectRow(at: indexPath, animated: true)
     }
-
+    
+    //MARK: - Add New Items
+    
+    //button to add new items to to-do list
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        //this textField has the scope of the entire addButtonPressed IBAction
+        //and it's accessible inside alert closures
+        var textField = UITextField()
+        
+        //when addButton is pressed, it will display a pop-up with a text field
+        let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
+        
+        //button to press after finish writing
+        let action = UIAlertAction(title: "Add", style: .default) { (action) in
+            //to append new items to the end of to-do-list
+            self.itemArray.append(textField.text!)
+            
+            //to reload tableView and show the new added data
+            self.tableView.reloadData()
+        }
+        
+        //to include a textField to pop-up alert
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+        }
+        
+        //to add action to alert
+        alert.addAction(action)
+        
+        //to show alert
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 
 
-//to select each cell and have it printed to debug console,
-//and be able to give it a checkmark everytime I click on each cell, and unchecked if I click again
+
 
 
 
