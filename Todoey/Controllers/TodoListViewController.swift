@@ -16,20 +16,13 @@ class TodoListViewController: UITableViewController {
     //to use Item struct inside ViewController
     var itemArray = [Item]()
     
-    //object to use with UserDefaults
-    let defaults = UserDefaults.standard
+    //file path to Documents folder where items inckuded in to-do will be saved
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "Find John"
-        itemArray.append(newItem2)
-        
+        loadItems()
     }
 
 //MARK: - TableView Datasource Methods
@@ -57,16 +50,16 @@ class TodoListViewController: UITableViewController {
         return cell
     }
     
-    
 //MARK: - TableView Delegate Methods
     
     //to detect which row was selected
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        //to set the done property on the current item in itemArray to the opposite of what it is
+        //to persist checking and unchecking data into plist
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        tableView.reloadData()
+        saveItems()
+        
             
         //when selected, cell flashes gray and goes back to being deselected and white
         tableView.deselectRow(at: indexPath, animated: true)
@@ -92,12 +85,7 @@ class TodoListViewController: UITableViewController {
             //to append new items to the end of to-do-list
             self.itemArray.append(newItem)
             
-            //after appeding new item to itemArray, we can save updated itemArray to UserDefaults
-            //the key is going to identify itemArray inside UserDefaults
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            
-            //to reload tableView and show the new added data
-            self.tableView.reloadData()
+            self.saveItems()
         }
         
         //to include a textField to pop-up alert
@@ -111,6 +99,36 @@ class TodoListViewController: UITableViewController {
         
         //to show alert
         present(alert, animated: true, completion: nil)
+    }
+    
+    //MARK: - Model Manipulation Methods
+    
+    func saveItems() {
+        //to encode data for plist file
+        let encoder = PropertyListEncoder()
+        //do and catch block because this func can throw an error
+        do {
+            let data = try encoder.encode(itemArray)
+            //to save encoded data into plist
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+        
+        //to reload tableView and show the new added data
+        self.tableView.reloadData()
+    }
+    
+    func loadItems() {
+        //to decode and load up data in to-do list from plist
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+            itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding item Array, \(error)")
+            }
+        }
     }
 }
 
