@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 //change UIViewController to UITableViewController
 //As we've inherited UITableVIewController and added a tableViewController to the storyboard instead of a normal ViewController,
@@ -18,11 +19,14 @@ class TodoListViewController: UITableViewController {
     
     //file path to Documents folder where items inckuded in to-do will be saved
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    //to call AppDelegate methods inside TodoListViewController
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadItems()
+//        loadItems()
     }
 
 //MARK: - TableView Datasource Methods
@@ -80,8 +84,12 @@ class TodoListViewController: UITableViewController {
         //button to press after finish writing
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             
-            let newItem = Item()
+            
+            
+            //context is the viewContext of persistentContainer
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false 
             //to append new items to the end of to-do-list
             self.itemArray.append(newItem)
             
@@ -104,32 +112,28 @@ class TodoListViewController: UITableViewController {
     //MARK: - Model Manipulation Methods
     
     func saveItems() {
-        //to encode data for plist file
-        let encoder = PropertyListEncoder()
-        //do and catch block because this func can throw an error
+        //to commit our context to permanent storage inside persistentContainer
         do {
-            let data = try encoder.encode(itemArray)
-            //to save encoded data into plist
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("Error encoding item array, \(error)")
+            ("Error saving context \(error)")
         }
         
         //to reload tableView and show the new added data
         self.tableView.reloadData()
     }
     
-    func loadItems() {
-        //to decode and load up data in to-do list from plist
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-            itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding item Array, \(error)")
-            }
-        }
-    }
+//    func loadItems() {
+//        //to decode and load up data in to-do list from plist
+//        if let data = try? Data(contentsOf: dataFilePath!) {
+//            let decoder = PropertyListDecoder()
+//            do {
+//            itemArray = try decoder.decode([Item].self, from: data)
+//            } catch {
+//                print("Error decoding item Array, \(error)")
+//            }
+//        }
+//    }
 }
 
 
