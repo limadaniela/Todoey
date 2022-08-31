@@ -17,8 +17,7 @@ class TodoListViewController: UITableViewController {
     //to use Item struct inside ViewController
     var itemArray = [Item]()
     
-    //file path to Documents folder where items inckuded in to-do will be saved
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
     
     //to call AppDelegate methods inside TodoListViewController
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -26,7 +25,10 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        loadItems()
+        //file path to Documents folder where items inckuded in to-do will be saved
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        
+        loadItems()
     }
 
 //MARK: - TableView Datasource Methods
@@ -123,17 +125,15 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }
     
-//    func loadItems() {
-//        //to decode and load up data in to-do list from plist
-//        if let data = try? Data(contentsOf: dataFilePath!) {
-//            let decoder = PropertyListDecoder()
-//            do {
-//            itemArray = try decoder.decode([Item].self, from: data)
-//            } catch {
-//                print("Error decoding item Array, \(error)")
-//            }
-//        }
-//    }
+    func loadItems() {
+        //to decode and load up data in to-do list from permanent store through context 
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        do {
+            itemArray = try context.fetch(request)
+        } catch {
+            ("Error fetching data from context \(error)")
+        }
+    }
 }
 
 
