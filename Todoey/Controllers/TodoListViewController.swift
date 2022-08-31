@@ -61,8 +61,15 @@ class TodoListViewController: UITableViewController {
     //to detect which row was selected
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
+        //to delete data from persistent container using CoreData
+        //First, remove NSManagedObject from context
+        context.delete(itemArray[indexPath.row])
+        //Then, remove the item from itemArray
+        itemArray.remove(at: indexPath.row)
+        
+        
         //to persist checking and unchecking data into plist
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+//        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
         saveItems()
         
