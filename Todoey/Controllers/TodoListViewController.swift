@@ -17,6 +17,13 @@ class TodoListViewController: UITableViewController {
     //to use Item struct inside ViewController
     var itemArray = [Item]()
     
+    var selectedCategory : Category? {
+        didSet{
+            //load up all the to-do list items from database.
+            loadItems()
+        }
+    }
+    
     //to call AppDelegate methods inside TodoListViewController
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
@@ -26,8 +33,6 @@ class TodoListViewController: UITableViewController {
         //file path to Documents folder where items inckuded in to-do will be saved
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-        //load up all the to-do list items from database.
-        loadItems()
     }
 
 //MARK: - TableView Datasource Methods
@@ -93,7 +98,8 @@ class TodoListViewController: UITableViewController {
             //context is the viewContext of persistentContainer
             let newItem = Item(context: self.context)
             newItem.title = textField.text!
-            newItem.done = false 
+            newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             //to append new items to the end of to-do-list
             self.itemArray.append(newItem)
             
@@ -127,7 +133,16 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }
     //this method has a default value '(Item.fetchRequest())' in case we call loadItems without giving it any parameters
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
         //to decode and load up data in to-do list from permanent store through context
         do {
             itemArray = try context.fetch(request)
@@ -150,13 +165,13 @@ extension TodoListViewController: UISearchBarDelegate {
         //to query using coreData and specify what we get back from database
         //NSPredicate specifies how data should be fetched or filtered
         //cd makes the query insensitive for case and diacritic
-        request.predicate  = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate  = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         //to sort the data that we get back from the database
         //add square brackets as sortDescriptors expects and array of NSSortDescriptor
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
        
     }
     //to go back to original list of all items when clear searchBar
